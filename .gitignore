@@ -1,0 +1,5 @@
+working/
+data/
+results/
+*.Rproj
+_targets/
