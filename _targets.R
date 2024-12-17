@@ -61,5 +61,6 @@ tar_plan(
     pattern = map(otu_clean_transposed),
     iteration = "list"
   ),
-  asymptotic_richness = extract_asy_est(i_next_res)
+  asymptotic_richness = extract_asy_est(i_next_res),
+  cor_res = check_diversity_correlation(asymptotic_richness)
 )

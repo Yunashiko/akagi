@@ -94,7 +94,17 @@ i_next <- function(otu_clean_transposed, nboot = 20) {
 extract_asy_est <- function(i_next_res) {
   transpose(i_next_res) |>
     magrittr::extract2("AsyEst") |>
-    bind_rows()
+    bind_rows() |>
+    as_tibble() |>
+    janitor::clean_names()
+}
+
+check_diversity_correlation <- function(asymptotic_richness) {
+  asymptotic_richness |>
+    summarize(
+      correlation = cor(observed, estimator),
+      .by = diversity
+    )
 }
 
 make_comm_for_network <- function(otu_clean, taxonomy_clean, plants) {
