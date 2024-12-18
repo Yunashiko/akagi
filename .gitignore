@@ -3,3 +3,4 @@ data/
 results/
 *.Rproj
 _targets/
+report.pdf
