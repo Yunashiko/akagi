@@ -1,9 +1,19 @@
 
-# seitai-yomitoku
+# seitai-yomitoku-targets
 
 このリポジトリは、「DNA情報で生態系を読み解く」（東樹 宏和 著）で紹介されている解析を再現するためのコードを提供します。
 
 This repository provides code for replicating (some) of the analyses in "DNA joho de seitai wo yomitoku" by Hirokazu Toju.
+
+## コードの実行
+
+このプロジェクトは[targets](https://github.com/ropensci/targets)でワークフロー管理を行なっています。
+
+下の準備が終わったら、Rで以下のコマンドを実行するとワークフローが自動的に実行されます：
+
+```
+targets::tar_make()
+```
 
 ## How to open in RStudio | RStudioでの開き方
 
