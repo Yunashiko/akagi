@@ -10,3 +10,5 @@ library(tidygraph)
 library(ggrepel)
 # 種特殊性
 library(bipartite)
+# 有意性検定
+library(canaper)
