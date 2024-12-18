@@ -1,0 +1,55 @@
+---
+title: "Network Report"
+format:
+  typst:
+    toc: false
+execute: 
+  echo: false
+  warning: false
+  message: false
+---
+
+```{r}
+#| label: startup
+library(targets)
+suppressPackageStartupMessages(library(tidyverse))
+library(ggraph)
+library(ggrepel)
+
+tar_load(c(
+  iter_sim_res,
+  network_graph
+))
+```
+
+## Results
+
+@fig-network-plot shows the graph of plant hosts (blue) and their microbes as detected by metabarcoding (red).
+The size of the points show betweenness.
+Plants are labeled.
+Other nodes are OTU family.
+
+```{r}
+#| label: fig-network-plot
+#| fig-height: 9
+#| fig-cap: "Network graph of plants and their microbes"
+ggraph(network_graph) +
+  geom_edge_link() +
+  geom_node_point(aes(color = plant, size = importance)) +
+  geom_label_repel(aes(label = plant_name, x = x, y = y)) +
+  theme(legend.position = "bottom")
+```
+
+## Supplemental Data
+
+### Number of iterations for randomization
+
+We conducted up to 10,000 swaps (iterations) with the `curveball` algorithm to determine the number of iterations needed to fully randomize the community data.
+The plot shows that the data are fully randomized after ca. 2,000 swaps.
+
+```{r}
+#| label: iter-sim-plot
+ggplot(iter_sim_res, aes(x = iteration, y = similarity)) +
+  geom_line() +
+  labs(x = "Num. iterations", y = "% Similarity")
+```

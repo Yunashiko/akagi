@@ -8,8 +8,13 @@ source("R/functions.R")
 
 # 並列処理の設定
 # 重要：自分のパソコンのコア数を確認して、`workers`がそれを超えないようにすること
+workers <- 6
+if (parallel::detectCores() < workers) {
+  stop("Number of workers exceeds number of cores")
+}
+
 tar_option_set(
-  controller = crew_controller_local(workers = 6),
+  controller = crew_controller_local(workers = workers),
   workspace_on_error = TRUE
 )
 
@@ -77,6 +82,8 @@ tar_plan(
   network_comm = make_comm_for_network(
     otu_clean, taxonomy_clean, plants, "family"
   ),
+  # - ネットワーク図のデータ
+  network_graph = make_network_graph(network_comm),
   # - 基本的な指標を計算する
   network_stats_obs = calc_network_level(
     network_comm,
@@ -145,5 +152,11 @@ tar_plan(
       species_select = plant_names
     ),
     pattern = cross(d_indices, plant_names)
+  ),
+  # - リポートを書く
+  tar_quarto(
+    network_report,
+    path = "report.qmd",
+    quiet = FALSE
   )
 )

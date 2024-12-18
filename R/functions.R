@@ -245,3 +245,22 @@ check_binary_data <- function(index = "weighted NODF") {
     column_to_rownames("plant") |>
     bipartite::networklevel(index = index)
 }
+
+# ネットワーク図
+
+make_network_graph <- function(network_comm) {
+  network_comm |>
+    column_to_rownames("plant") |>
+    as.matrix() |>
+    graph_from_biadjacency_matrix(multiple = TRUE) |>
+    as_tbl_graph() |>
+    activate(nodes) |>
+    # 図で示すデータを用意する
+    # - 植物かどうか
+    rename(plant = type) |>
+    mutate(plant = !plant) |>
+    # - 媒介中心性
+    mutate(importance = centrality_betweenness()) |>
+    # - 植物の名前
+    mutate(plant_name = if_else(plant, name, NA_character_))
+}
