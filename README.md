@@ -36,13 +36,13 @@ taxonomy_rank_count
     # A tibble: 7 × 2
       rank        n
       <chr>   <int>
-    1 kingdom  5771
-    2 phylum   3192
-    3 class    2806
-    4 order    2576
-    5 family   2175
-    6 genus    1857
-    7 species  1096
+    1 kingdom  5648
+    2 phylum   3129
+    3 class    2749
+    4 order    2524
+    5 family   2127
+    6 genus    1827
+    7 species  1088
 
 ## How to open in RStudio \| RStudioでの開き方
 
@@ -52,10 +52,9 @@ taxonomy_rank_count
 2.  Git を選択します。  
     ![](docs/r-project-wizard-2.png)
 3.  Repository URLに
-    <https://github.com/joelnitta/seitai-yomitoku/>、Project directory
-    name に`seitai-yomitoku`、Create project as subdirectory of
-    に任意のフォルダー（Desktopがおすすめ）を入力します。  
-    ![](docs/r-project-wizard-3.png)
+    <https://github.com/joelnitta/seitai-yomitoku-targets/>、Project
+    directory name に`seitai-yomitoku`、Create project as subdirectory
+    of に任意のフォルダー（Desktopがおすすめ）を入力します。  
 4.  Create project ボタンを押します。
 5.  データをダウンロードする
 

@@ -44,8 +44,7 @@ taxonomy_rank_count
 ![](docs/r-project-wizard-1.png)
 2. Git を選択します。  
 ![](docs/r-project-wizard-2.png)
-3. Repository URLに <https://github.com/joelnitta/seitai-yomitoku/>、Project directory name に`seitai-yomitoku`、Create project as subdirectory of に任意のフォルダー（Desktopがおすすめ）を入力します。  
-![](docs/r-project-wizard-3.png)
+3. Repository URLに <https://github.com/joelnitta/seitai-yomitoku-targets/>、Project directory name に`seitai-yomitoku`、Create project as subdirectory of に任意のフォルダー（Desktopがおすすめ）を入力します。  
 4. Create project ボタンを押します。
 5. データをダウンロードする
 
