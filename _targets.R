@@ -8,7 +8,7 @@ source("R/functions.R")
 
 # 並列処理の設定
 # 重要：自分のパソコンのコア数を確認して、`workers`がそれを超えないようにすること
-workers <- 6
+workers <- 4
 if (parallel::detectCores() < workers) {
   stop("Number of workers exceeds number of cores")
 }
