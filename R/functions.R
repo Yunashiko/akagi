@@ -100,7 +100,7 @@ clean_taxonomy_data <- function(otu_taxonomy) {
 #' @return A tibble with the count of identified taxa at each rank.
 #' @examples
 #' count_tax_ranks(taxonomy_clean)
-count_tax_ranks <- function(taxonomy_clean) {
+count_tax_ranks <- function(taxonomy_clean, otu_clean) {
   taxonomy_clean |>
     pivot_longer(
       names_to = "rank",
@@ -108,6 +108,7 @@ count_tax_ranks <- function(taxonomy_clean) {
       -otu_id
     ) |>
     filter(!is.na(taxon)) |>
+    filter(otu_id %in% otu_clean$otu_id) |>
     count(rank, sort = TRUE)
 }
 

@@ -51,7 +51,7 @@ tar_plan(
   # 分類データを整える
   taxonomy_clean = clean_taxonomy_data(otu_taxonomy),
   # それぞれの分類階級がどれくらい同定できているのか確認する
-  taxonomy_rank_count = count_tax_ranks(taxonomy_clean),
+  taxonomy_rank_count = count_tax_ranks(taxonomy_clean, otu_clean),
 
   # 希釈 ----
 
