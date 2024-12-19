@@ -4,3 +4,4 @@ results/
 *.Rproj
 _targets/
 report.pdf
+.DS_Store
