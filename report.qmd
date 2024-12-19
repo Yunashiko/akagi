@@ -17,12 +17,33 @@ library(ggraph)
 library(ggrepel)
 
 tar_load(c(
+  taxonomy_rank_count,
   iter_sim_res,
-  network_graph
+  network_graph,
+  otu_clean
 ))
+
+num <- function(x) {
+  scales::number(x, big.mark = ",")
+}
 ```
 
 ## Results
+
+@tbl-taxonomy-rank-count shows the number of OTUs successfully identified by DNA metabarcoding by taxonomic rank.
+There were a total of `r num(n_distinct(otu_clean$otu_id))` unique OTUs in the dataset.
+
+```{r}
+#| label: tbl-taxonomy-rank-count
+#| tbl-cap: "Count of OTUs identified by taxonomic rank."
+taxonomy_rank_count |>
+  mutate(
+    Rank = str_to_sentence(rank),
+    `*n*` = num(n),
+    .keep = "none"
+  ) |>
+  knitr::kable()
+```
 
 @fig-network-plot shows the graph of plant hosts (blue) and their microbes as detected by metabarcoding (red).
 The size of the points show betweenness.
@@ -32,7 +53,7 @@ Other nodes are OTU family.
 ```{r}
 #| label: fig-network-plot
 #| fig-height: 9
-#| fig-cap: "Network graph of plants and their microbes"
+#| fig-cap: "Network graph of plants and their microbes."
 ggraph(network_graph) +
   geom_edge_link() +
   geom_node_point(aes(color = plant, size = importance)) +
