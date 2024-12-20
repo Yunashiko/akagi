@@ -78,15 +78,23 @@ tar_plan(
   # ネットワーク図 ----
 
   # ネットワーク図にデータを用意する
-  # - 群集（community）データ。行が植物、列がOTUの分類群（共生菌）。
+  # - 群集（community）データ。行が植物、列がOTUの分類群（共生菌）。#location_selectで地域選択
   network_comm_yoshimoto = make_comm_for_network(
-    otu_clean, taxonomy_clean, plants, "family", location_select = "吉本沖縄"
+    otu_clean, taxonomy_clean, plants, "otu_id", location_select = "吉本沖縄"
+  ),
+  network_comm_kumai = make_comm_for_network(
+    otu_clean, taxonomy_clean, plants, "otu_id", location_select = "熊井沖縄"
   ),
   # - ネットワーク図のデータ
   network_graph_yoshimoto = make_network_graph(network_comm_yoshimoto),
+  network_graph_kumai = make_network_graph(network_comm_kumai),
   # - 基本的な指標を計算する
   network_stats_obs_yoshimoto = calc_network_level(
     network_comm_yoshimoto,
+    index = c("binary")
+  ),
+  network_stats_obs_kumai = calc_network_level(
+    network_comm_kumai,
     index = c("binary")
   ),
   # 有意性検定の準備
@@ -94,8 +102,16 @@ tar_plan(
   #    図で元のでデータといじったデータを比較し、
   #    ランダムになるまで何回いじる必要があるのかを判断する。
   #    参照文献： https://docs.ropensci.org/canaper/articles/how-many-rand.html
-  iter_sim_res = cpr_iter_sim(
-    comm = column_to_rownames(network_comm, "plant"),
+  iter_sim_res_yoshimoto = cpr_iter_sim(
+    comm = column_to_rownames(network_comm_yoshimoto, "plant"),
+    null_model = "curveball", # 最も早いアルゴリズム
+    n_iterations = 10000,
+    thin = 10,
+    seed = 123
+  ),
+  
+  iter_sim_res_kumai = cpr_iter_sim(
+    comm = column_to_rownames(network_comm_kumai, "plant"),
     null_model = "curveball", # 最も早いアルゴリズム
     n_iterations = 10000,
     thin = 10,
@@ -105,10 +121,24 @@ tar_plan(
   #   d 検定で効率よく並列処理ができるように100個のグループ（batch）に分ける
   #   各batchに10回シミュレーションする（合計1000回）
   tar_rep(
-    random_comms_batched,
+    random_comms_batched_yoshimoto,
     list(
       comm = randomize_single_comm(
-        network_comm,
+        network_comm_yoshimoto,
+        null_model = "curveball",
+        n_iterations = 2000 # iter_sim_resの可視化によって2000回で十分であると判断
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  
+  tar_rep(
+    random_comms_batched_kumai,
+    list(
+      comm = randomize_single_comm(
+        network_comm_kumai,
         null_model = "curveball",
         n_iterations = 2000 # iter_sim_resの可視化によって2000回で十分であると判断
       )
@@ -122,41 +152,80 @@ tar_plan(
   network_indices = c("NODF"),
   # - 有意性検定を行う（ネットワーク全体の指標）
   tar_target(
-    random_comms_list,
-    purrr::flatten(random_comms_batched) |> map(1)
+    random_comms_list_yoshimoto,
+    purrr::flatten(random_comms_batched_yoshimoto) |> map(1)
   ),
   tar_target(
-    network_stats,
+    network_stats_yoshimoto,
     run_rand_test(
-      network_comm,
-      random_comms_list,
+      network_comm_yoshimoto,
+      random_comms_list_yoshimoto,
+      index = network_indices
+    ),
+    pattern = map(network_indices)
+  ),
+  
+  tar_target(
+    random_comms_list_kumai,
+    purrr::flatten(random_comms_batched_kumai) |> map(1)
+  ),
+  tar_target(
+    network_stats_kumai,
+    run_rand_test(
+      network_comm_kumai,
+      random_comms_list_kumai,
       index = network_indices
     ),
     pattern = map(network_indices)
   ),
   # - 種特殊性の有意性検定を行う（種ごとの指標）
-  dfun_obs_res = calculate_d(network_comm),
+  dfun_obs_res_yoshimoto = calculate_d(network_comm_yoshimoto),
   tar_rep2(
-    dfun_rand_vals,
-    dfun(random_comms_batched$comm),
-    random_comms_batched
+    dfun_rand_vals_yoshimoto,
+    dfun(random_comms_batched_yoshimoto$comm),
+    random_comms_batched_yoshimoto
   ),
-  plant_names = pull(network_comm, "plant"),
+  plant_names_yoshimoto = pull(network_comm_yoshimoto, "plant"),
   d_indices = c("dprime", "d", "dmin", "dmax"),
   tar_target(
-    d_stats,
+    d_stats_yoshimoto,
     calculate_p_val_dstats(
-      dfun_obs_res = dfun_obs_res,
-      dfun_rand_vals = dfun_rand_vals,
+      dfun_obs_res = dfun_obs_res_yoshimoto,
+      dfun_rand_vals = dfun_rand_vals_yoshimoto,
       d_stat_select = d_indices,
-      species_select = plant_names
+      species_select = plant_names_yoshimoto
     ),
-    pattern = cross(d_indices, plant_names)
+    pattern = cross(d_indices, plant_names_yoshimoto)
+  ),
+  
+  
+  dfun_obs_res_kumai = calculate_d(network_comm_kumai),
+  tar_rep2(
+    dfun_rand_vals_kumai,
+    dfun(random_comms_batched_kumai$comm),
+    random_comms_batched_kumai
+  ),
+  plant_names_kumai = pull(network_comm_kumai, "plant"),
+  tar_target(
+    d_stats_kumai,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_kumai,
+      dfun_rand_vals = dfun_rand_vals_kumai,
+      d_stat_select = d_indices,
+      species_select = plant_names_kumai
+    ),
+    pattern = cross(d_indices, plant_names_kumai)
   ),
   # - リポートを書く
   tar_quarto(
-    network_report,
+    network_report_yoshimoto,
     path = "report.qmd",
     quiet = FALSE
-  )
+  ),
+
+tar_quarto(
+  network_report_kumai,
+  path = "report.qmd",
+  quiet = FALSE
+)
 )
