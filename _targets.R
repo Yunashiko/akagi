@@ -8,7 +8,7 @@ source("R/functions.R")
 
 # 並列処理の設定
 # 重要：自分のパソコンのコア数を確認して、`workers`がそれを超えないようにすること
-workers <- 4
+workers <- 16
 if (parallel::detectCores() < workers) {
   stop("Number of workers exceeds number of cores")
 }
@@ -79,14 +79,14 @@ tar_plan(
 
   # ネットワーク図にデータを用意する
   # - 群集（community）データ。行が植物、列がOTUの分類群（共生菌）。
-  network_comm = make_comm_for_network(
-    otu_clean, taxonomy_clean, plants, "family"
+  network_comm_yoshimoto = make_comm_for_network(
+    otu_clean, taxonomy_clean, plants, "family", location_select = "吉本沖縄"
   ),
   # - ネットワーク図のデータ
-  network_graph = make_network_graph(network_comm),
+  network_graph_yoshimoto = make_network_graph(network_comm_yoshimoto),
   # - 基本的な指標を計算する
-  network_stats_obs = calc_network_level(
-    network_comm,
+  network_stats_obs_yoshimoto = calc_network_level(
+    network_comm_yoshimoto,
     index = c("binary")
   ),
   # 有意性検定の準備
