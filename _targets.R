@@ -82,12 +82,25 @@ tar_plan(
   network_comm_yoshimoto = make_comm_for_network(
     otu_clean, taxonomy_clean, plants, "otu_id", location_select = "吉本沖縄"
   ),
+  
   network_comm_kumai = make_comm_for_network(
     otu_clean, taxonomy_clean, plants, "otu_id", location_select = "熊井沖縄"
   ),
+  
+  network_comm_zairai = make_comm_for_network(
+    otu_clean, taxonomy_clean, plants, "otu_id", location_select = "在来種林"
+  ),
+  
+  network_comm_akagi = make_comm_for_network(
+    otu_clean, taxonomy_clean, plants, "otu_id", location_select = "アカギ純林"
+  ),
+  
   # - ネットワーク図のデータ
   network_graph_yoshimoto = make_network_graph(network_comm_yoshimoto),
   network_graph_kumai = make_network_graph(network_comm_kumai),
+  network_graph_zairai = make_network_graph(network_comm_zairai),
+  network_graph_akagi = make_network_graph(network_comm_akagi),
+  
   # - 基本的な指標を計算する
   network_stats_obs_yoshimoto = calc_network_level(
     network_comm_yoshimoto,
@@ -95,6 +108,14 @@ tar_plan(
   ),
   network_stats_obs_kumai = calc_network_level(
     network_comm_kumai,
+    index = c("binary")
+  ),
+  network_stats_obs_zairai = calc_network_level(
+    network_comm_zairai,
+    index = c("binary")
+  ),
+  network_stats_obs_akagi = calc_network_level(
+    network_comm_akagi,
     index = c("binary")
   ),
   # 有意性検定の準備
@@ -109,7 +130,6 @@ tar_plan(
     thin = 10,
     seed = 123
   ),
-  
   iter_sim_res_kumai = cpr_iter_sim(
     comm = column_to_rownames(network_comm_kumai, "plant"),
     null_model = "curveball", # 最も早いアルゴリズム
@@ -117,6 +137,21 @@ tar_plan(
     thin = 10,
     seed = 123
   ),
+  iter_sim_res_zairai = cpr_iter_sim(
+    comm = column_to_rownames(network_comm_zairai, "plant"),
+    null_model = "curveball", # 最も早いアルゴリズム
+    n_iterations = 10000,
+    thin = 10,
+    seed = 123
+  ),
+  iter_sim_res_akagi = cpr_iter_sim(
+    comm = column_to_rownames(network_comm_akagi, "plant"),
+    null_model = "curveball", # 最も早いアルゴリズム
+    n_iterations = 10000,
+    thin = 10,
+    seed = 123
+  ),
+  
   # - ランダムな群集を1000回シミュレーションする
   #   d 検定で効率よく並列処理ができるように100個のグループ（batch）に分ける
   #   各batchに10回シミュレーションする（合計1000回）
@@ -133,12 +168,37 @@ tar_plan(
     reps = 10,
     iteration = "list"
   ),
-  
   tar_rep(
     random_comms_batched_kumai,
     list(
       comm = randomize_single_comm(
         network_comm_kumai,
+        null_model = "curveball",
+        n_iterations = 2000 # iter_sim_resの可視化によって2000回で十分であると判断
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  tar_rep(
+    random_comms_batched_zairai,
+    list(
+      comm = randomize_single_comm(
+        network_comm_zairai,
+        null_model = "curveball",
+        n_iterations = 2000 # iter_sim_resの可視化によって2000回で十分であると判断
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  tar_rep(
+    random_comms_batched_akagi,
+    list(
+      comm = randomize_single_comm(
+        network_comm_akagi,
         null_model = "curveball",
         n_iterations = 2000 # iter_sim_resの可視化によって2000回で十分であると判断
       )
@@ -164,7 +224,6 @@ tar_plan(
     ),
     pattern = map(network_indices)
   ),
-  
   tar_target(
     random_comms_list_kumai,
     purrr::flatten(random_comms_batched_kumai) |> map(1)
@@ -174,6 +233,32 @@ tar_plan(
     run_rand_test(
       network_comm_kumai,
       random_comms_list_kumai,
+      index = network_indices
+    ),
+    pattern = map(network_indices)
+  ),
+  tar_target(
+    random_comms_list_zairai,
+    purrr::flatten(random_comms_batched_zairai) |> map(1)
+  ),
+  tar_target(
+    network_stats_zairai,
+    run_rand_test(
+      network_comm_zairai,
+      random_comms_list_zairai,
+      index = network_indices
+    ),
+    pattern = map(network_indices)
+  ),
+  tar_target(
+    random_comms_list_akagi,
+    purrr::flatten(random_comms_batched_akagi) |> map(1)
+  ),
+  tar_target(
+    network_stats_akagi,
+    run_rand_test(
+      network_comm_akagi,
+      random_comms_list_akagi,
       index = network_indices
     ),
     pattern = map(network_indices)
@@ -216,6 +301,45 @@ tar_plan(
     ),
     pattern = cross(d_indices, plant_names_kumai)
   ),
+  
+  
+  dfun_obs_res_zairai = calculate_d(network_comm_zairai),
+  tar_rep2(
+    dfun_rand_vals_zairai,
+    dfun(random_comms_batched_zairai$comm),
+    random_comms_batched_zairai
+  ),
+  plant_names_zairai = pull(network_comm_zairai, "plant"),
+  tar_target(
+    d_stats_zairai,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_zairai,
+      dfun_rand_vals = dfun_rand_vals_zairai,
+      d_stat_select = d_indices,
+      species_select = plant_names_zairai
+    ),
+    pattern = cross(d_indices, plant_names_zairai)
+  ),
+  
+  
+  dfun_obs_res_akagi = calculate_d(network_comm_akagi),
+  tar_rep2(
+    dfun_rand_vals_akagi,
+    dfun(random_comms_batched_akagi$comm),
+    random_comms_batched_akagi
+  ),
+  plant_names_akagi = pull(network_comm_akagi, "plant"),
+  tar_target(
+    d_stats_akagi,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_akagi,
+      dfun_rand_vals = dfun_rand_vals_akagi,
+      d_stat_select = d_indices,
+      species_select = plant_names_akagi
+    ),
+    pattern = cross(d_indices, plant_names_akagi)
+  ),
+  
   # - リポートを書く
   tar_quarto(
     network_report_yoshimoto,
@@ -223,8 +347,21 @@ tar_plan(
     quiet = FALSE
   ),
 
-tar_quarto(
+ tar_quarto(
   network_report_kumai,
+  path = "report.qmd",
+  quiet = FALSE
+),
+
+
+ tar_quarto(
+  network_report_zairai,
+  path = "report.qmd",
+  quiet = FALSE
+),
+
+ tar_quarto(
+  network_report_akagi,
   path = "report.qmd",
   quiet = FALSE
 )
