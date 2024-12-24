@@ -209,7 +209,7 @@ tar_plan(
   ),
   # - 検定する指標を設定する
   #   weighted NODFとH2はバイナリーデータで必ずゼロになるので、ここでは使わない
-  network_indices = c("NODF"),
+  network_indices = c("NODF", "connectance"),
   # - 有意性検定を行う（ネットワーク全体の指標）
   tar_target(
     random_comms_list_yoshimoto,
@@ -263,6 +263,7 @@ tar_plan(
     ),
     pattern = map(network_indices)
   ),
+  
   # - 種特殊性の有意性検定を行う（種ごとの指標）
   dfun_obs_res_yoshimoto = calculate_d(network_comm_yoshimoto),
   tar_rep2(
@@ -340,6 +341,25 @@ tar_plan(
     pattern = cross(d_indices, plant_names_akagi)
   ),
   
+  #真菌から植物の種特殊性
+  #行列の入れ替え
+  Tnetwork_comm_yoshimoto <- t(network_comm_yoshimoto),
+  colnames(Tnetwork_comm_yoshimoto) <- as.character(Tnetwork_comm_yoshimoto[1,]),
+  Tnetwork_comm_yoshimoto <- Tnetwork_comm_yoshimoto[-1,],
+   
+  Tnetwork_comm_kumai <- t(network_comm_kumai),
+  colnames(Tnetwork_comm_kumai) <- as.character(Tnetwork_comm_kumai[1,]),
+  Tnetwork_comm_kumai <- Tnetwork_comm_kumai[-1,],
+  
+  Tnetwork_comm_zairai <- t(network_comm_zairai),
+  colnames(Tnetwork_comm_zairai) <- as.character(Tnetwork_comm_zairai[1,]),
+  Tnetwork_comm_zairai <- Tnetwork_comm_zairai[-1,],
+  
+  Tnetwork_comm_akagi <- t(network_comm_akagi),
+  colnames(Tnetwork_comm_akagi) <- as.character(Tnetwork_comm_akagi[1,]),
+  Tnetwork_comm_akagi <- Tnetwork_comm_akagi[-1,],
+  
+
   # - リポートを書く
   tar_quarto(
     network_report_yoshimoto,
