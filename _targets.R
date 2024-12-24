@@ -341,25 +341,145 @@ tar_plan(
     pattern = cross(d_indices, plant_names_akagi)
   ),
   
-  #真菌から植物の種特殊性
-  #行列の入れ替え
-  Tnetwork_comm_yoshimoto <- t(network_comm_yoshimoto),
-  colnames(Tnetwork_comm_yoshimoto) <- as.character(Tnetwork_comm_yoshimoto[1,]),
-  Tnetwork_comm_yoshimoto <- Tnetwork_comm_yoshimoto[-1,],
-   
-  Tnetwork_comm_kumai <- t(network_comm_kumai),
-  colnames(Tnetwork_comm_kumai) <- as.character(Tnetwork_comm_kumai[1,]),
-  Tnetwork_comm_kumai <- Tnetwork_comm_kumai[-1,],
-  
-  Tnetwork_comm_zairai <- t(network_comm_zairai),
-  colnames(Tnetwork_comm_zairai) <- as.character(Tnetwork_comm_zairai[1,]),
-  Tnetwork_comm_zairai <- Tnetwork_comm_zairai[-1,],
-  
-  Tnetwork_comm_akagi <- t(network_comm_akagi),
-  colnames(Tnetwork_comm_akagi) <- as.character(Tnetwork_comm_akagi[1,]),
-  Tnetwork_comm_akagi <- Tnetwork_comm_akagi[-1,],
+
+  #真菌→植物
+  network_comm_t_yoshimoto = transpose_network_comm(network_comm_yoshimoto),
+  dfun_obs_res_t_yoshimoto = calculate_d(network_comm_t_yoshimoto, names_col = "microbe"),
+  tar_rep(
+    random_comms_batched_t_yoshimoto,
+    list(
+      comm = randomize_single_comm(
+        network_comm_t_yoshimoto,
+        null_model = "curveball",
+        n_iterations = 2000,
+        names_col = "microbe"
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  tar_rep2(
+    dfun_rand_vals_t_yoshimoto,
+    dfun(random_comms_batched_t_yoshimoto$comm),
+    random_comms_batched_t_yoshimoto
+  ),
+  microbe_names_yoshimoto = pull(network_comm_t_yoshimoto, "microbe"),
+  tar_target(
+    d_stats_t_yoshimoto,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_t_yoshimoto,
+      dfun_rand_vals = dfun_rand_vals_t_yoshimoto,
+      d_stat_select = d_indices,
+      species_select = microbe_names_yoshimoto
+    ),
+    pattern = cross(d_indices, microbe_names_yoshimoto),
+    ),
   
 
+    network_comm_t_kumai = transpose_network_comm(network_comm_kumai),
+    dfun_obs_res_t_kumai = calculate_d(network_comm_t_kumai, names_col = "microbe"),
+    tar_rep(
+      random_comms_batched_t_kumai,
+      list(
+        comm = randomize_single_comm(
+          network_comm_t_kumai,
+          null_model = "curveball",
+          n_iterations = 2000,
+          names_col = "microbe"
+        )
+      ),
+      batches = 100,
+      reps = 10,
+      iteration = "list"
+    ),
+    tar_rep2(
+      dfun_rand_vals_t_kumai,
+      dfun(random_comms_batched_t_kumai$comm),
+      random_comms_batched_t_kumai
+    ),
+    microbe_names_kumai = pull(network_comm_t_kumai, "microbe"),
+    tar_target(
+      d_stats_t_kumai,
+      calculate_p_val_dstats(
+        dfun_obs_res = dfun_obs_res_t_kumai,
+        dfun_rand_vals = dfun_rand_vals_t_kumai,
+        d_stat_select = d_indices,
+        species_select = microbe_names_kumai
+      ),
+      pattern = cross(d_indices, microbe_names_kumai),
+    ),
+  
+  
+  network_comm_t_zairai = transpose_network_comm(network_comm_zairai),
+  dfun_obs_res_t_zairai = calculate_d(network_comm_t_zairai, names_col = "microbe"),
+  tar_rep(
+    random_comms_batched_t_zairai,
+    list(
+      comm = randomize_single_comm(
+        network_comm_t_zairai,
+        null_model = "curveball",
+        n_iterations = 2000,
+        names_col = "microbe"
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  tar_rep2(
+    dfun_rand_vals_t_zairai,
+    dfun(random_comms_batched_t_zairai$comm),
+    random_comms_batched_t_zairai
+  ),
+  microbe_names_zairai = pull(network_comm_t_zairai, "microbe"),
+  tar_target(
+    d_stats_t_zairai,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_t_zairai,
+      dfun_rand_vals = dfun_rand_vals_t_zairai,
+      d_stat_select = d_indices,
+      species_select = microbe_names_zairai
+    ),
+    pattern = cross(d_indices, microbe_names_zairai),
+  ),
+
+    
+  network_comm_t_akagi = transpose_network_comm(network_comm_akagi),
+  dfun_obs_res_t_akagi = calculate_d(network_comm_t_akagi, names_col = "microbe"),
+  tar_rep(
+    random_comms_batched_t_akagi,
+    list(
+      comm = randomize_single_comm(
+        network_comm_t_akagi,
+        null_model = "curveball",
+        n_iterations = 2000,
+        names_col = "microbe"
+      )
+    ),
+    batches = 100,
+    reps = 10,
+    iteration = "list"
+  ),
+  tar_rep2(
+    dfun_rand_vals_t_akagi,
+    dfun(random_comms_batched_t_akagi$comm),
+    random_comms_batched_t_akagi
+  ),
+  microbe_names_akagi = pull(network_comm_t_akagi, "microbe"),
+  tar_target(
+    d_stats_t_akagi,
+    calculate_p_val_dstats(
+      dfun_obs_res = dfun_obs_res_t_akagi,
+      dfun_rand_vals = dfun_rand_vals_t_akagi,
+      d_stat_select = d_indices,
+      species_select = microbe_names_akagi
+    ),
+    pattern = cross(d_indices, microbe_names_akagi),
+  ),   
+    
+    
+      
   # - リポートを書く
   tar_quarto(
     network_report_yoshimoto,
